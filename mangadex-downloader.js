@@ -1,6 +1,5 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  A userscript to add download-buttons to mangadex
 // @author       icelord
