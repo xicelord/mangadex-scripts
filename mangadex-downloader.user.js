@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      0.4
+// @version      0.5
 // @description  A userscript to add download-buttons to mangadex
 // @author       icelord
 // @homepage     https://github.com/xicelord/mangadex-scripts
@@ -94,6 +94,7 @@
                         GM_xmlhttpRequest({
                           method:   'GET',
                           url:      to_download,
+                          responseType: 'arraybuffer',
                           onload:   function (data) {
                                       zip.file(mangatitle + (language == "eng" ? "" : " [" + language + "]") + " - c" + (chapter < 100 ? chapter < 10 ? '00' + chapter : '0' + chapter : chapter) + (volume ? " (v" + (volume < 10 ? '0' + volume : volume) + ")" : "") + " - p" + (current_page < 100 ? current_page < 10 ? '00' + current_page : '0' + current_page : current_page) + " [" + group + "]" +  '.' + to_download.split('.').pop(), data.response, { binary: true });
                                       if (!failed) { setProgress(id, ((page_count -page_urls.length) /page_count) * 100); }
