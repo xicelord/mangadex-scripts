@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      0.1
+// @version      0.2
 // @description  A userscript to add download-buttons to mangadex
 // @author       icelord
 // @homepage     https://github.com/xicelord/mangadex-scripts
@@ -22,11 +22,55 @@
         $('<span title="Download" id="dl-' + id + '" class="fas fa-download" style="color: rgb(102, 102, 102); cursor: pointer; margin: 0px 5px;"></span>').prependTo(element);
         document.getElementById('dl-' + id).addEventListener('click', () => { downloadChapter($(element).find('a')[0].href); }, false);
     });
+  
+    let languages = {
+      Arabic: 'ara',
+      Bengali: 'ben',
+      Bulgarian: 'bul',
+      Catalan: 'cat',
+      Chinese: 'chi',
+      Czech: 'cze',
+      Danish: 'dan',
+      Dutch: 'dut',
+      English: 'eng',
+      Filipino: 'fil',
+      Finnish: 'fin',
+      French: 'fre',
+      German: 'ger',
+      Greek: 'gre',
+      Hungarian: 'hun',
+      Indonesian: 'ind',
+      Italian: 'ita',
+      Japanese: 'jpn',
+      Korean: 'kor',
+      Malaysian: 'may',
+      Mongolian: 'mon',
+      Persian: 'per',
+      Polish: 'pol',
+      'Portuguese (Brazil)': 'por',
+      'Portuguese (Portugal)': 'por',
+      Romanian: 'rum',
+      Russian: 'rus',
+      'Serbo-Croatian': 'hrv',
+      'Spanish (LATAM)': 'spa',
+      'Spanish (Spain)': 'spa',
+      Swedish: 'swe',
+      Thai: 'tha',
+      Turkish: 'tur',
+      Vietnamese: 'vie'
+    };
 
     //Function to download a chapter (called by download-buttons)
     function downloadChapter(url) {
         //Inject progressbar
         let id = url.split('/').pop();
+        let link = $('a[href="/chapter/' + id + '"]');
+        let chapter = link.data('chapterNum');
+        let volume = link.data('volumeNum');
+        let title = link.data('chapterName');
+        let group = link.parent().parent()[0].querySelector('td:nth-child(3) > a').innerText;
+        let mangatitle = $('.panel-title')[0].innerText.trim();
+        let language = languages[link.parent().parent()[0].querySelector('td:nth-child(2) > img').title];
         $('<div id="progress-out-' + id + '" style="width: 100%; margin-bottom: 2px; background-color: grey;"><div id="progress-in-' + id + '" style="width: 0%; height: 5px; background-color: green;"></div></div>').insertBefore($('#dl-' + id));
 
         getPageUrls(url, (err, page_urls) => {
@@ -36,7 +80,7 @@
             } else {
                 //Fetch all pages using JSZip
                 let zip = new JSZip();
-                let zipFilename = "download.zip";
+                let zipFilename = mangatitle + (language == "eng" ? "" : " [" + language + "]") + " - c" + chapter.toString().padStart(3, "0") + " [" + group + "].zip";
                 let page_count = page_urls.length;
                 let active_downloads = 0;
                 let failed = false;
