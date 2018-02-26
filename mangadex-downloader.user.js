@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      0.3
+// @version      0.4
 // @description  A userscript to add download-buttons to mangadex
 // @author       icelord
 // @homepage     https://github.com/xicelord/mangadex-scripts
@@ -10,7 +10,7 @@
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.0.2/jszip-utils.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.min.js
-// @grant        none
+// @grant        GM_xmlhttpRequest
 // ==/UserScript==
 
 (function() {
@@ -80,7 +80,7 @@
             } else {
                 //Fetch all pages using JSZip
                 let zip = new JSZip();
-                let zipFilename = mangatitle + (language == "eng" ? "" : " [" + language + "]") + " - c" + (chapter < 100 ? chapter < 10 ? '00' + chapter : '0' + chapter : chapter) + " [" + group + "].zip";
+                let zipFilename = mangatitle + (language == "eng" ? "" : " [" + language + "]") + " - c" + (chapter < 100 ? chapter < 10 ? '00' + chapter : '0' + chapter : chapter) + (volume ? " (v" + (volume < 10 ? '0' + volume : volume) + ")" : "") + " [" + group + "].zip";
                 let page_count = page_urls.length;
                 let active_downloads = 0;
                 let failed = false;
@@ -91,17 +91,21 @@
                         let current_page = page_count - page_urls.length;
 
                         active_downloads++;
-                        JSZipUtils.getBinaryContent(to_download, function (err, data) {
-                            if (!err) {
-                                zip.file(mangatitle + (language == "eng" ? "" : " [" + language + "]") + " - c" + (chapter < 100 ? chapter < 10 ? '00' + chapter : '0' + chapter : chapter) + " - p" + (current_page < 100 ? current_page < 10 ? '00' + current_page : '0' + current_page : current_page) + " [" + group + "]" +  '.' + to_download.split('.').pop(), data, { binary: true });
-                                if (!failed) { setProgress(id, ((page_count -page_urls.length) /page_count) * 100); }
-                                active_downloads--;
-                            } else {
-                                alert('A page-download failed. Check the console for more details.');
-                                console.log(err);
-                                clearInterval(interval);
-                                setProgress(id, -1);
-                            }
+						
+                        GM_xmlhttpRequest({
+                          method:   'GET',
+                          url:      to_download,
+                          onload:   function (data) {
+                                      zip.file(mangatitle + (language == "eng" ? "" : " [" + language + "]") + " - c" + (chapter < 100 ? chapter < 10 ? '00' + chapter : '0' + chapter : chapter) + (volume ? " (v" + (volume < 10 ? '0' + volume : volume) + ")" : "") + " - p" + (current_page < 100 ? current_page < 10 ? '00' + current_page : '0' + current_page : current_page) + " [" + group + "]" +  '.' + to_download.split('.').pop(), data.response, { binary: true });
+                                      if (!failed) { setProgress(id, ((page_count -page_urls.length) /page_count) * 100); }
+                                      active_downloads--;
+                                    },
+                          onerror:  function (data) {
+                                      alert('A page-download failed. Check the console for more details.');
+                                      console.log(data);
+                                      clearInterval(interval);
+                                      setProgress(id, -1);
+                                    }
                         });
                     } else if (active_downloads === 0 && page_urls.length === 0) {
                         clearInterval(interval);
