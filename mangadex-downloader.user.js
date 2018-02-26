@@ -80,7 +80,7 @@
             } else {
                 //Fetch all pages using JSZip
                 let zip = new JSZip();
-                let zipFilename = mangatitle + (language == "eng" ? "" : " [" + language + "]") + " - c" + chapter.toString().padStart(3, "0") + " [" + group + "].zip";
+                let zipFilename = mangatitle + (language == "eng" ? "" : " [" + language + "]") + " - c" + chapter < 100 ? chapter < 10 ? '00' + chapter : '0' + chapter : chapter + " [" + group + "].zip";
                 let page_count = page_urls.length;
                 let active_downloads = 0;
                 let failed = false;
