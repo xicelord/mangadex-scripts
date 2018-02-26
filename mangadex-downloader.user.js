@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      0.5
+// @version      0.6
 // @description  A userscript to add download-buttons to mangadex
 // @author       icelord
 // @homepage     https://github.com/xicelord/mangadex-scripts
@@ -75,6 +75,7 @@
         getPageUrls(url, (err, page_urls) => {
             if (err) {
                 alert('The page-urls could not be fetched. Check the console for more details.');
+		setProgress(id, -1);
                 console.log(err);
             } else {
                 //Fetch all pages using JSZip
