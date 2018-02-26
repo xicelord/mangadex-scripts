@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      0.2
+// @version      0.3
 // @description  A userscript to add download-buttons to mangadex
 // @author       icelord
 // @homepage     https://github.com/xicelord/mangadex-scripts
@@ -80,7 +80,7 @@
             } else {
                 //Fetch all pages using JSZip
                 let zip = new JSZip();
-                let zipFilename = mangatitle + (language == "eng" ? "" : " [" + language + "]") + " - c" + chapter < 100 ? chapter < 10 ? '00' + chapter : '0' + chapter : chapter + " [" + group + "].zip";
+                let zipFilename = mangatitle + (language == "eng" ? "" : " [" + language + "]") + " - c" + (chapter < 100 ? chapter < 10 ? '00' + chapter : '0' + chapter : chapter) + " [" + group + "].zip";
                 let page_count = page_urls.length;
                 let active_downloads = 0;
                 let failed = false;
@@ -88,11 +88,12 @@
                 let interval = setInterval(() => {
                     if (active_downloads < 3 && page_urls.length > 0) {
                         let to_download = page_urls.shift();
+                        let current_page = page_count - page_urls.length;
 
                         active_downloads++;
                         JSZipUtils.getBinaryContent(to_download, function (err, data) {
                             if (!err) {
-                                zip.file('x' + pad(to_download.split('/').pop().split('.').shift().substr(1), 5) + '.' + to_download.split('.').pop(), data, { binary: true });
+                                zip.file(mangatitle + (language == "eng" ? "" : " [" + language + "]") + " - c" + (chapter < 100 ? chapter < 10 ? '00' + chapter : '0' + chapter : chapter) + " - p" + (current_page < 100 ? current_page < 10 ? '00' + current_page : '0' + current_page : current_page) + " [" + group + "]" +  '.' + to_download.split('.').pop(), data, { binary: true });
                                 if (!failed) { setProgress(id, ((page_count -page_urls.length) /page_count) * 100); }
                                 active_downloads--;
                             } else {
@@ -154,9 +155,5 @@
     //Helper-functions
     function replaceAll(str, search, replacement) {
         return str.split(search).join(replacement);
-    }
-    function pad(n, width) {
-        n = n + '';
-        return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
     }
 })();
