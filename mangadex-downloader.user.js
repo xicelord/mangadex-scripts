@@ -130,7 +130,6 @@
     let language_iso = languages[language];
     $('<div id="progress-out-' + id + '" style="width: 100%; margin-bottom: 2px; background-color: grey;"><div id="progress-in-' + id + '" style="width: 0%; height: 5px; background-color: green;"></div></div>').insertBefore($('#dl-' + id));
 
-    if(!volume) volume = 0;
     //Fetch page-urls and download them
     getPageUrls(url, (err, page_urls) => {
       if (err) {
@@ -150,7 +149,7 @@
           chapterInfo += $('.panel-heading + div tr:first-child td').text().trim() === '' ? '' : $('.panel-heading + div tr:first-child td').text() + '\n';
           chapterInfo += url + '\n\n';
           chapterInfo += 'Chapter: ' + chapter + '\n';
-          chapterInfo += 'Volume: ' + volume + '\n';
+          if(volume) chapterInfo += 'Volume: ' + volume + '\n';
           chapterInfo += 'Title: ' + title + '\n';
           chapterInfo += 'Group: ' + group + '\n\n';
           chapterInfo += 'Genres: ' + $('.panel-heading + div tr:nth-child(4) td').text().trim().replace(/ /g, ', ') + '\n';
@@ -167,6 +166,7 @@
         }
 
         if(localStorage.getItem("chapter-info") == '2') {
+          if(!volume) volume = 0;
           const chapterInfo = {
             manga: mangatitle,
             altnames: $('.panel-heading + div tr:first-child td').text().split(', '),
