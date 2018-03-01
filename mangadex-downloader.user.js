@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      0.8
+// @version      0.9
 // @description  A userscript to add download-buttons to mangadex
 // @author       icelord
 // @homepage     https://github.com/xicelord/mangadex-scripts
@@ -41,7 +41,12 @@
                                     '</div>' +
                                     '<div class="form-group">' +
                                       '<label for="chapter-info" class="col-sm-3 control-label">Save release info:</label>' +
-                                      '<input id="chapter-info" type="checkbox"' + (localStorage.getItem("file-extension") ? ' checked' : '') + '>' +
+                                      '<div class="col-sm-9">' +
+                                        '<select class="form-control selectpicker" id="chapter-info">' +
+                                          '<option ' + ((localStorage.getItem("chapter-info") === '0' ) ? 'selected ' : '') + 'value="0">Off</option>' +
+                                          '<option ' + ((localStorage.getItem("chapter-info") === '1' ) ? 'selected ' : '') + 'value="1">On</option>' +
+                                        '</select>' +
+                                      '</div>' +
                                     '</div>' +
                                     '<div class="form-group">' +
                                       '<label for="parallel-downloads" class="col-sm-3 control-label">Parallel Downloads:</label>' +
@@ -61,11 +66,7 @@
     document.getElementById('save_downloader_settings').addEventListener('click', () => {
       localStorage.setItem('file-extension', document.getElementById('file-extension').value);
       localStorage.setItem('parallel-downloads', parseInt(document.getElementById('parallel-downloads').value));
-      if(document.getElementById('chapter-info').checked) {
-        localStorage.setItem('chapter-info', true);
-      } else {
-        localStorage.removeItem('chapter-info');
-      }
+      localStorage.setItem('chapter-info', document.getElementById('chapter-info').value);
     }, false);
     return;
   }
@@ -142,7 +143,7 @@
         let active_downloads = 0;
         let failed = false;
 
-        if(localStorage.getItem("chapter-info")) {
+        if(localStorage.getItem("chapter-info") == '1') {
           let chapterInfo = mangatitle + '\n';
           chapterInfo += $('.panel-heading + div tr:first-child td').text().trim() === '' ? '' : $('.panel-heading + div tr:first-child td').text() + '\n';
           chapterInfo += url + '\n\n';
