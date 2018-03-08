@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      0.10
+// @version      0.11
 // @description  A userscript to add download-buttons to mangadex
 // @author       icelord
 // @homepage     https://github.com/xicelord/mangadex-scripts
@@ -71,8 +71,9 @@
     }, false);
     return;
   }
+
   //Inject download-buttons
-  $('tr[id^="chapter_"]').find('td:first').each((i, element) => {
+  $('tr[id^="chapter_"]').find('td:eq(1)').each((i, element) => {
     let id = $(element).find('a')[0].href.split('/').pop();
 
     $('<span title="Download" id="dl-' + id + '" class="fas fa-download" style="color: rgb(102, 102, 102); cursor: pointer; margin: 0px 5px;"></span>').prependTo(element);
@@ -124,9 +125,9 @@
     let chapter = link.data('chapterNum');
     let volume = link.data('volumeNum');
     let title = link.data('chapterName');
-    let group = link.parent().parent()[0].querySelector('td:nth-child(3) > a').innerText;
+    let group = link.parent().parent()[0].querySelector('td:nth-child(4) > a').innerText;
     let mangatitle = $('.panel-title')[0].innerText.trim();
-    let language = link.parent().parent()[0].querySelector('td:nth-child(2) > img').title;
+    let language = link.parent().parent()[0].querySelector('td:nth-child(3) > img').title;
     let language_iso = languages[language];
     $('<div id="progress-out-' + id + '" style="width: 100%; margin-bottom: 2px; background-color: grey;"><div id="progress-in-' + id + '" style="width: 0%; height: 5px; background-color: green;"></div></div>').insertBefore($('#dl-' + id));
 
@@ -144,48 +145,60 @@
         let active_downloads = 0;
         let failed = false;
 
+        //Generate chapter-info
+        const chapterInfo = {
+          manga: mangatitle,
+          altnames: (() => {
+            let results = [];
+            $('.panel-heading + div tr:first-child td').find('li').each((i, element) => {
+                results.push($(element).text().trim());
+            });
+            return results;
+          })(),
+          link: url,
+          chapter: chapter,
+          volume: volume || null,
+          title: title,
+          group: group,
+          genres: $('.panel-heading + div tr:nth-child(4) td').text().trim().split(' '),
+          uploader: {
+            id: parseInt(link.parent().parent().find('td:nth-child(5) > a').attr('href').replace(/\/user\//, '')),
+            username: link.parent().parent().find('td:nth-child(5)').text()
+          },
+          posted: link.parent().parent().find('td:last-child')[0].title,
+          language: language,
+          translated: (language !== $('.panel-title > img')[0].title),
+          images: (() => {
+            let results = [];
+            page_urls.forEach(function(url){
+              results.push(url.replace(/^\//, location.protocol + '//' + location.hostname + '/'));
+            });
+            return results;
+          })()
+        };
+
         if (localStorage.getItem("chapter-info") == '1') {
-          let chapterInfo = mangatitle + '\n';
-          chapterInfo += $('.panel-heading + div tr:first-child td').text().trim() === '' ? '' : $('.panel-heading + div tr:first-child td').text() + '\n';
-          chapterInfo += url + '\n\n';
-          chapterInfo += 'Chapter: ' + chapter + '\n';
-          if(volume) chapterInfo += 'Volume: ' + volume + '\n';
-          chapterInfo += 'Title: ' + title + '\n';
-          chapterInfo += 'Group: ' + group + '\n\n';
-          chapterInfo += 'Genres: ' + $('.panel-heading + div tr:nth-child(4) td').text().trim().replace(/ /g, ', ') + '\n';
-          chapterInfo += 'Uploader: ' + link.parent().parent().find('td:nth-child(4)').text() + ' (' + link.parent().parent().find('td:nth-child(4) > a').attr('href').replace(/\/user\//, '') + ')' + '\n';
-          chapterInfo += 'Posted: ' + link.parent().parent().find('td:last-child')[0].title + '\n';
-          chapterInfo += 'Language: ' + language + (language === $('.panel-title > img')[0].title ? '' : '  TR') + '\n';
-          chapterInfo += 'Length: ' + page_count + ' page' + (page_urls.length > 1 ? 's' : '') + '\n\n\n\n';
-          page_urls.forEach(function(url, index){
-            chapterInfo += 'Image ' + (index + 1) + ': ' + url.replace(/^\//, location.protocol + '//' + location.hostname + '/') + '\n';
+          let textFile = '';
+          textFile += chapterInfo.manga + '\n';
+          textFile += chapterInfo.altnames.join(', ') + '\n';
+          textFile += chapterInfo.link + '\n\n';
+          textFile += 'Chapter: ' + chapterInfo.chapter + '\n';
+          textFile += 'Volume: ' + (chapterInfo.volume !== null ? chapterInfo.volume : 'Unknown') + '\n';
+          textFile += 'Title: ' + chapterInfo.title + '\n';
+          textFile += 'Group: ' + chapterInfo.group + '\n';
+          textFile += 'Genres: ' + chapterInfo.genres.join(', ') + '\n';
+          textFile += 'Uploader: ' + chapterInfo.uploader.username + ' (ID: ' + chapterInfo.uploader.id + ')\n';
+          textFile += 'Posted: ' + chapterInfo.posted + '\n';
+          textFile += 'Language: ' + chapterInfo.language + (chapterInfo.translated ? ' (TL) \n' : '\n');
+          textFile += 'Length: ' + chapterInfo.images.length + '\n\n';
+          chapterInfo.images.forEach((image, i) => {
+            textFile += 'Image ' + (i +1) + ': ' + image + '\n';
           });
-          chapterInfo += '\nDownloaded at ' + new Date() + '\n\n';
-          chapterInfo += 'Generated by MangaDex Downloader. https://github.com/xicelord/mangadex-scripts';
-          zip.file('info.txt', chapterInfo.replace(/\n/gi, '\r\n'));
+          textFile += '\n\nDownloaded at ' + (new Date()) + '\n';
+          textFile += 'Generated by MangaDex Downloader. https://github.com/xicelord/mangadex-scripts';
+
+          zip.file('info.txt', textFile.replace(/\n/gi, '\r\n'));
         } else if (localStorage.getItem("chapter-info") == '2') {
-          if(!volume) volume = null;
-          const chapterInfo = {
-            manga: mangatitle,
-            altnames: $('.panel-heading + div tr:first-child td').text().split(', '),
-            link: url,
-            chapter: chapter,
-            volume: volume,
-            title: title,
-            group: group,
-            genres: $('.panel-heading + div tr:nth-child(4) td').text().trim().split(' '),
-            uploader: {
-              id: parseInt(link.parent().parent().find('td:nth-child(4) > a').attr('href').replace(/\/user\//, '')),
-              username: link.parent().parent().find('td:nth-child(4)').text()
-            },
-            posted: link.parent().parent().find('td:last-child')[0].title,
-            language: language,
-            translated: (language !== $('.panel-title > img')[0].title),
-            images: []
-          };
-          page_urls.forEach(function(url){
-            chapterInfo.images.push(url.replace(/^\//, location.protocol + '//' + location.hostname + '/'));
-          });
           zip.file('info.json', JSON.stringify(chapterInfo, null, 4));
         }
 
