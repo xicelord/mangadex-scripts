@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      0.12
+// @version      0.13
 // @description  A userscript to add download-buttons to mangadex
 // @author       icelord
 // @homepage     https://github.com/xicelord/mangadex-scripts
@@ -163,8 +163,8 @@
           groups: groups,
           genres: $('.panel-heading + div tr:nth-child(4) td').text().trim().split(' '),
           uploader: {
-            id: parseInt(link.parent().parent().find('td:nth-child(5) > a').attr('href').replace(/\/user\//, '')),
-            username: link.parent().parent().find('td:nth-child(5)').text()
+            id: parseInt(link.parent().parent().find('td:nth-child(6) > a').attr('href').replace(/\/user\//, '')),
+            username: link.parent().parent().find('td:nth-child(6)').text()
           },
           posted: link.parent().parent().find('td:last-child')[0].title,
           language: language,
