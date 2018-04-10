@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      0.11
+// @version      0.12
 // @description  A userscript to add download-buttons to mangadex
 // @author       icelord
 // @homepage     https://github.com/xicelord/mangadex-scripts
@@ -125,9 +125,10 @@
     let chapter = link.data('chapterNum');
     let volume = link.data('volumeNum');
     let title = link.data('chapterName');
-    let group = link.parent().parent()[0].querySelector('td:nth-child(4) > a').innerText;
+    let groups = [];
+    link.parent().parent()[0].querySelectorAll('td:nth-child(5) > a').forEach((gg) => { groups.push(gg.innerText); });
     let mangatitle = $('.panel-title')[0].innerText.trim();
-    let language = link.parent().parent()[0].querySelector('td:nth-child(3) > img').title;
+    let language = link.parent().parent()[0].querySelector('td:nth-child(4) > img').title;
     let language_iso = languages[language];
     $('<div id="progress-out-' + id + '" style="width: 100%; margin-bottom: 2px; background-color: grey;"><div id="progress-in-' + id + '" style="width: 0%; height: 5px; background-color: green;"></div></div>').insertBefore($('#dl-' + id));
 
@@ -140,7 +141,7 @@
       } else {
         //Fetch all pages using JSZip
         let zip = new JSZip();
-        let zipFilename = mangatitle + (language_iso == "eng" ? "" : " [" + language_iso + "]") + " - c" + (chapter < 100 ? chapter < 10 ? '00' + chapter : '0' + chapter : chapter) + (volume ? " (v" + (volume < 10 ? '0' + volume : volume) + ")" : "") + " [" + group + "]" + (localStorage.getItem("file-extension") || '.zip');
+        let zipFilename = mangatitle + (language_iso == "eng" ? "" : " [" + language_iso + "]") + " - c" + (chapter < 100 ? chapter < 10 ? '00' + chapter : '0' + chapter : chapter) + (volume ? " (v" + (volume < 10 ? '0' + volume : volume) + ")" : "") + " [" + groups + "]" + (localStorage.getItem("file-extension") || '.zip');
         let page_count = page_urls.length;
         let active_downloads = 0;
         let failed = false;
@@ -159,7 +160,7 @@
           chapter: chapter,
           volume: volume || null,
           title: title,
-          group: group,
+          groups: groups,
           genres: $('.panel-heading + div tr:nth-child(4) td').text().trim().split(' '),
           uploader: {
             id: parseInt(link.parent().parent().find('td:nth-child(5) > a').attr('href').replace(/\/user\//, '')),
@@ -185,7 +186,7 @@
           textFile += 'Chapter: ' + chapterInfo.chapter + '\n';
           textFile += 'Volume: ' + (chapterInfo.volume !== null ? chapterInfo.volume : 'Unknown') + '\n';
           textFile += 'Title: ' + chapterInfo.title + '\n';
-          textFile += 'Group: ' + chapterInfo.group + '\n';
+          textFile += 'Groups: ' + chapterInfo.groups + '\n';
           textFile += 'Genres: ' + chapterInfo.genres.join(', ') + '\n';
           textFile += 'Uploader: ' + chapterInfo.uploader.username + ' (ID: ' + chapterInfo.uploader.id + ')\n';
           textFile += 'Posted: ' + chapterInfo.posted + '\n';
@@ -213,7 +214,7 @@
               url:      to_download,
               responseType: 'arraybuffer',
               onload:   function (data) {
-                zip.file(mangatitle + (language_iso == "eng" ? "" : " [" + language_iso + "]") + " - c" + (chapter < 100 ? chapter < 10 ? '00' + chapter : '0' + chapter : chapter) + (volume ? " (v" + (volume < 10 ? '0' + volume : volume) + ")" : "") + " - p" + (current_page < 100 ? current_page < 10 ? '00' + current_page : '0' + current_page : current_page) + " [" + group + "]" +  '.' + to_download.split('.').pop(), data.response, { binary: true });
+                zip.file(mangatitle + (language_iso == "eng" ? "" : " [" + language_iso + "]") + " - c" + (chapter < 100 ? chapter < 10 ? '00' + chapter : '0' + chapter : chapter) + (volume ? " (v" + (volume < 10 ? '0' + volume : volume) + ")" : "") + " - p" + (current_page < 100 ? current_page < 10 ? '00' + current_page : '0' + current_page : current_page) + " [" + groups + "]" +  '.' + to_download.split('.').pop(), data.response, { binary: true });
                 if (!failed) { setProgress(id, ((page_count -page_urls.length) /page_count) * 100); }
                 active_downloads--;
               },
