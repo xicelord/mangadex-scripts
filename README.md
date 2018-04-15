@@ -8,6 +8,10 @@ This deletes all chapters of a user on the current page. After pasting it into t
 A userscript to add a download-button to mangadex-chapters. [Install](https://github.com/xicelord/mangadex-scripts/raw/master/mangadex-downloader.user.js)  
 You can find it's settings [here](https://mangadex.com/settings)
 
+## mangadex-mangaupdates_rating.user.js
+A userscript which automatically fetches the rating of the current manga from mangaupdates and injects it into the current page.  
+[Install](https://github.com/xicelord/mangadex-scripts/raw/master/mangadex-mangaupdates_rating.user.js)
+
 ## mangadex-uploader.sh
 A primitive bash-script to upload a single chapter to mangadex. For help how to use it, simply execute it without arguments.
 An improved version for bulk-uploads written in NodeJS can be found [here](https://github.com/xicelord/mangadex-bulkuploader).
