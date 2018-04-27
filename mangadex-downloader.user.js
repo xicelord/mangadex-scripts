@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      0.13
+// @version      0.14
 // @description  A userscript to add download-buttons to mangadex
 // @author       icelord
 // @homepage     https://github.com/xicelord/mangadex-scripts
@@ -214,7 +214,7 @@
               url:      to_download,
               responseType: 'arraybuffer',
               onload:   function (data) {
-                zip.file(mangatitle + (language_iso == "eng" ? "" : " [" + language_iso + "]") + " - c" + (chapter < 100 ? chapter < 10 ? '00' + chapter : '0' + chapter : chapter) + (volume ? " (v" + (volume < 10 ? '0' + volume : volume) + ")" : "") + " - p" + (current_page < 100 ? current_page < 10 ? '00' + current_page : '0' + current_page : current_page) + " [" + groups + "]" +  '.' + to_download.split('.').pop(), data.response, { binary: true });
+                zip.file((mangatitle + (language_iso == "eng" ? "" : " [" + language_iso + "]") + " - c" + (chapter < 100 ? chapter < 10 ? '00' + chapter : '0' + chapter : chapter) + (volume ? " (v" + (volume < 10 ? '0' + volume : volume) + ")" : "") + " - p" + (current_page < 100 ? current_page < 10 ? '00' + current_page : '0' + current_page : current_page) + " [" + groups + "]" +  '.' + to_download.split('.').pop()).replace(/[\/\?<>\\:\*\|":\x00-\x1f\x80-\x9f]/gi, '_'), data.response, { binary: true });
                 if (!failed) { setProgress(id, ((page_count -page_urls.length) /page_count) * 100); }
                 active_downloads--;
               },
