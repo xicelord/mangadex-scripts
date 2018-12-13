@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      0.17
+// @version      0.18
 // @description  A userscript to add download-buttons to mangadex
 // @author       icelord
 // @homepage     https://github.com/xicelord/mangadex-scripts
@@ -62,16 +62,17 @@
     //Settings or download
     if (document.URL === 'https://mangadex.org/settings') {
       //Add tab
-      $('li[role="presentation"]').last().after('<li role="presentation">' +
-                                                  '<a href="#download_settings" aria-controls="download_settings" role="tab" data-toggle="tab" aria-expanded="false">' +
-                                                    '<span class="fas fa-download fa-fw" aria-hidden="true"></span> Download' +
-                                                  '</a>' +
-                                                '</li>');
+      $('.nav-item').last().after('<li class="nav-item">' +
+                                    '<a class="nav-link" href="#download_settings" aria-controls="download_settings" data-toggle="tab">' +
+                                        '<span class="fas fa-download fa-fw" aria-hidden="true"></span>' +
+                                        '<span class="d-none d-lg-inline"> Downloads</span>' +
+                                    '</a>' +
+                                  '</li>');
 
       //Add options
-      $('#filter_settings').after('<div role="tabpanel" class="tab-pane fade" id="download_settings">' +
+      $('#supporter_settings').after('<div role="tabpanel" class="tab-pane fade" id="download_settings">' +
                                     '<div class="form-horizontal">' +
-                                      '<div class="form-group">' +
+                                      '<div class="form-group row">' +
                                         '<label for="file-extension" class="col-sm-3 control-label">Extension:</label>' +
                                         '<div class="col-sm-9">' +
                                           '<select class="form-control selectpicker" id="file-extension">' +
@@ -80,7 +81,7 @@
                                           '</select>' +
                                         '</div>' +
                                       '</div>' +
-                                      '<div class="form-group">' +
+                                      '<div class="form-group row">' +
                                         '<label for="chapter-info" class="col-sm-3 control-label">Save release info:</label>' +
                                         '<div class="col-sm-9">' +
                                           '<select class="form-control selectpicker" id="chapter-info">' +
@@ -90,13 +91,13 @@
                                           '</select>' +
                                         '</div>' +
                                       '</div>' +
-                                      '<div class="form-group">' +
+                                      '<div class="form-group row">' +
                                         '<label for="parallel-downloads" class="col-sm-3 control-label">Parallel Downloads:</label>' +
                                         '<div class="col-sm-9">' +
                                           '<input type="numbers" class="form-control" id="parallel-downloads" value="' + (localStorage.getItem("parallel-downloads") || 3) + '" />' +
                                         '</div>' +
                                       '</div>' +
-                                      '<div class="form-group">' +
+                                      '<div class="form-group row">' +
                                         '<div class="col-sm-offset-3 col-sm-9">' +
                                           '<button type="submit" class="btn btn-default" id="save_downloader_settings"><span class="fas fa-save fa-fw" aria-hidden="true"></span> Save</button>' +
                                         '</div>' +
@@ -109,6 +110,7 @@
         localStorage.setItem('file-extension', document.getElementById('file-extension').value);
         localStorage.setItem('parallel-downloads', parseInt(document.getElementById('parallel-downloads').value));
         localStorage.setItem('chapter-info', document.getElementById('chapter-info').value);
+        alert('Updated settings!');
       }, false);
       return;
     }
