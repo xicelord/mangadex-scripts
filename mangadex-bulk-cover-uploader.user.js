@@ -2,7 +2,7 @@
 // @name         Mangadex Bulk Cover Uploader
 // @namespace    https://github.com/xicelord
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Upload all the covers!
 // @author       icelord
 // @homepage     https://github.com/xicelord/mangadex-scripts
@@ -70,7 +70,7 @@
         document.getElementById('bcu-preview').innerText = files_filtered.join('\n')
     }
 
-    document.getElementById('bcu-submit').onclick = function () {
+    document.getElementById('bcu-submit').onclick = async function () {
         // Disable logic
         if (document.getElementById('bcu-submit').classList.contains('disabled')) {
             return
@@ -84,27 +84,38 @@
             const match = files[i].name.match(/(\d+)/)
 
             if (match !== null) {
-                let formData = new FormData();
-                let req = new XMLHttpRequest();
-                let cover = document.getElementById('bcu-cover_files').files[i];
-
-                formData.append('volume', match[1])
-                formData.append('old_file', cover.name)
-                formData.append('file', cover)
-                req.addEventListener('load', function() {
-                    finished_files++
-                    document.getElementById('bcu-progress').style.width = ((total_files / finished_files) * 100) + '%'
-
-                    if (this.responseText.length > 0) {
-                        document.getElementById('bcu-progress').classList.add('bg-danger')
-                        console.log('Error at: ' + files[i].name)
-                        console.error(this.responseText)
-                    }
-                });
-                req.open('POST', `https://mangadex.org/ajax/actions.ajax.php?function=manga_cover_upload&id=${document.location.href.match(/title\/(\d+)/)[1]}`)
-                req.setRequestHeader('x-requested-with', 'XMLHttpRequest')
-                req.send(formData);
+                await addCover(match[1], document.getElementById('bcu-cover_files').files[i])
             }
         }
+    }
+
+    async function addCover(volume, cover) {
+        return new Promise(function (resolve, reject) {
+            let formData = new FormData();
+            let req = new XMLHttpRequest();
+
+            formData.append('volume', volume)
+            formData.append('old_file', cover.name)
+            formData.append('file', cover)
+            req.addEventListener('load', function() {
+                finished_files++
+                console.log(`${total_files}/${finished_files}`)
+                document.getElementById('bcu-progress').style.width = ((finished_files / total_files) * 100) + '%'
+
+                if (this.responseText.length > 0) {
+                    document.getElementById('bcu-progress').classList.add('bg-danger')
+                    console.log('Error at: ' + cover.name)
+                    console.error(this.responseText)
+                }
+
+                resolve()
+            })
+            req.addEventListener('error', function() {
+                reject()
+            })
+            req.open('POST', `https://mangadex.org/ajax/actions.ajax.php?function=manga_cover_upload&id=${document.location.href.match(/title\/(\d+)/)[1]}`)
+            req.setRequestHeader('x-requested-with', 'XMLHttpRequest')
+            req.send(formData);
+        })
     }
 })();
