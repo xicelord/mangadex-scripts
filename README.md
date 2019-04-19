@@ -6,7 +6,7 @@ This deletes all chapters of a user on the current page. After pasting it into t
 
 ## mangadex-downloader.user.js
 A userscript to add a download-button to mangadex-chapters. [Install](https://github.com/xicelord/mangadex-scripts/raw/master/mangadex-downloader.user.js)  
-You can find it's settings [here](https://mangadex.com/settings)
+You can find it's settings [here](https://mangadex.org/settings)
 
 ## mangadex-bulk-cover-uploader.user.js
 A userscript to add bulk cover upload to mangadex. It will use the first number in the filename as Volume.  
