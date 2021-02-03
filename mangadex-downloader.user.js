@@ -75,7 +75,7 @@
                                       '<div class="form-group row">' +
                                         '<label for="file-extension" class="col-sm-3 control-label">Extension:</label>' +
                                         '<div class="col-sm-9">' +
-                                          '<select class="form-control selectpicker" id="file-extension">' +
+                                          '<select class="form-control" id="file-extension">' +
                                             '<option ' + (((localStorage.getItem("file-extension") || '.zip') === '.zip' ) ? 'selected ' : '') + 'value=".zip">.zip</option>' +
                                             '<option ' + (((localStorage.getItem("file-extension") || '.zip') === '.cbz' ) ? 'selected ' : '') + 'value=".cbz">.cbz</option>' +
                                           '</select>' +
@@ -84,7 +84,7 @@
                                       '<div class="form-group row">' +
                                         '<label for="chapter-info" class="col-sm-3 control-label">Save release info:</label>' +
                                         '<div class="col-sm-9">' +
-                                          '<select class="form-control selectpicker" id="chapter-info">' +
+                                          '<select class="form-control" id="chapter-info">' +
                                             '<option ' + ((localStorage.getItem("chapter-info") === '0' ) ? 'selected ' : '') + 'value="0">Disabled</option>' +
                                             '<option ' + ((localStorage.getItem("chapter-info") === '1' ) ? 'selected ' : '') + 'value="1">Text file</option>' +
                                             '<option ' + ((localStorage.getItem("chapter-info") === '2' ) ? 'selected ' : '') + 'value="2">JSON</option>' +
