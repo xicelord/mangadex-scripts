@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      1.0
+// @version      1.1
 // @description  A userscript to add download-buttons to mangadex
 // @author       NO_ob, icelord
 // @homepage     https://github.com/xicelord/mangadex-scripts
