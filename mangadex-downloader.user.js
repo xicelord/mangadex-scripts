@@ -3,7 +3,7 @@
 // @version      1.2
 // @description  A userscript to add download-buttons to mangadex
 // @author       NO_ob, icelord
-// @homepage     https://github.com/xicelord/mangadex-scripts
+// @homepage     https://github.com/NO-ob/mangadex-scripts/
 // @updateURL    https://github.com/NO-ob/mangadex-scripts/raw/master/mangadex-downloader.user.js
 // @downloadURL  https://github.com/NO-ob/mangadex-scripts/raw/master/mangadex-downloader.user.js
 // @match        https://mangadex.org/settings
