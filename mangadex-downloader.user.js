@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      1.1
+// @version      1.2
 // @description  A userscript to add download-buttons to mangadex
 // @author       NO_ob, icelord
 // @homepage     https://github.com/xicelord/mangadex-scripts
@@ -306,7 +306,7 @@
           let zip = new JSZip();
           let zipFilename =
           chapterInfo.manga +
-          "[" + chapterInfo.language + "]" +
+          (chapterInfo.language == "English" ? "" : " [" + language_iso[chapterInfo.language] + "]") +
           " - c" + (chapterInfo.chapter < 100 ? chapterInfo.chapter < 10 ? '00' + chapterInfo.chapter : '0' + chapterInfo.chapter : chapterInfo.chapter) +
           (chapterInfo.volume ? " (v" + (chapterInfo.volume < 10 ? '0' + chapterInfo.volume : chapterInfo.volume) + ")" : "") +
           " [" + chapterInfo.groups + "]" +
@@ -348,7 +348,7 @@
               let current_page = page_count - page_urls.length;
               let page_filename =
               (chapterInfo.manga +
-                (chapterInfo.language == "English" ? "" : "[" + language_iso[chapterInfo.language] + "]") +
+                (chapterInfo.language == "English" ? "" : " [" + language_iso[chapterInfo.language] + "]") +
                 " - c" + (chapterInfo.chapter < 100 ? chapterInfo.chapter < 10 ? '00' + chapterInfo.chapter : '0' + chapterInfo.chapter : chapterInfo.chapter) +
                 (chapterInfo.volume ? " (v" + (chapterInfo.volume < 10 ? '0' + chapterInfo.volume : chapterInfo.volume) + ")" : "") +
                 " - p" + (current_page < 100 ? current_page < 10 ? '00' + current_page : '0' + current_page : current_page) +
