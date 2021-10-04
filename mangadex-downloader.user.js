@@ -230,6 +230,18 @@
     return null;
   }
 
+  async function getScanlationGroupName(groupID){
+    console.log("getting group: " + groupID);
+    let resp = await fetch("https://api.mangadex.org/group/" + groupID);
+    if (resp.ok) {
+      let group = await resp.json();
+      return group.data.attributes.name != null ? [group.data.attributes.name] : [];
+    } else {
+      console.log("Failed to get metadata for user: " + userID);
+    }
+    return [];
+  }
+
   function normalizeAltNames(alts){
     let altNames = [];
     alts.forEach((alt)=>{
@@ -264,12 +276,15 @@
         let tagsMap = getTags(mangaData.attributes.tags);
         //
         let uploaderID = "";
-        console.log("language is " + chapterData.attributes.translatedLanguage)
+        let groupID = "";
+
         chapterData.relationships.forEach((relationship) => {if (relationship.type == "user") {uploaderID = relationship.id;}});
+        chapterData.relationships.forEach((relationship) => {if (relationship.type == "scanlation_group") {groupID = relationship.id;}});
+
         let uploader = await getUser(uploaderID);
-        console.log("language is" + chapterData.attributes.translatedLanguage);
-        console.log(chapterData.attributes);
+        let group = await getScanlationGroupName(groupID);
         let link = 'https://mangadex.org/chapter/' + mangaData.id;
+
         const chapterInfo = {
           manga: mangaData.attributes.title.en,
           altnames: normalizeAltNames(mangaData.attributes.altTitles),
@@ -277,7 +292,7 @@
           chapter: chapterData.attributes.chapter,
           volume: chapterData.attributes.volume || null,
           title: chapterData.attributes.title || null,
-          groups: [],
+          groups: group.join(),
           genres: tagsMap.genre,
             //get user from chapterdata https://api.mangadex.org/user/ id
             uploader: uploader ,
@@ -333,7 +348,7 @@
               let current_page = page_count - page_urls.length;
               let page_filename =
               (chapterInfo.manga +
-                (chapterInfo.language == "English" ? "" : " [" + language_iso[chapterInfo.language] + "]") +
+                (chapterInfo.language == "English" ? "" : "[" + language_iso[chapterInfo.language] + "]") +
                 " - c" + (chapterInfo.chapter < 100 ? chapterInfo.chapter < 10 ? '00' + chapterInfo.chapter : '0' + chapterInfo.chapter : chapterInfo.chapter) +
                 (chapterInfo.volume ? " (v" + (chapterInfo.volume < 10 ? '0' + chapterInfo.volume : chapterInfo.volume) + ")" : "") +
                 " - p" + (current_page < 100 ? current_page < 10 ? '00' + current_page : '0' + current_page : current_page) +
