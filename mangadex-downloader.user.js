@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      1.2
+// @version      1.3
 // @description  A userscript to add download-buttons to mangadex
 // @author       NO_ob, icelord
-// @homepage     https://github.com/NO-ob/mangadex-scripts/
+// @homepage     https://github.com/xicelord/mangadex-scripts
 // @updateURL    https://github.com/NO-ob/mangadex-scripts/raw/master/mangadex-downloader.user.js
 // @downloadURL  https://github.com/NO-ob/mangadex-scripts/raw/master/mangadex-downloader.user.js
+// @match        https://mangadex.org
 // @match        https://mangadex.org/settings
 // @match        https://www.mangadex.org/settings
 // @match        https://mangadex.org/title/*
@@ -16,7 +17,6 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM.setValue
 // @grant        GM.getValue
-// @run-at       document-idle
 // ==/UserScript==
 
 (function() {
@@ -61,23 +61,38 @@
       };
 
     //Settings or download
-    // observe for page to actually load, fuck webapps
-    if (document.URL.includes("https://mangadex.org/settings")) {
-      (new MutationObserver(addScriptSettings)).observe(document, {childList: true, subtree: true});
-    } else if (document.URL.includes("https://mangadex.org/title/")){
-      (new MutationObserver(addDownloadButtons)).observe(document, {childList: true, subtree: true});
-    }
+    // Need to observe constantly or script wont observe changes when loading
 
-    function addScriptSettings(changes, observer){
-    //Add tab
-    if (document.querySelector("div.grid-auto-rows")){
-      observer.disconnect();
-      let settingsGroup = document.querySelector("div.grid-auto-rows");
-      let navBar = document.querySelector("div.static.self-start");
-      let newNavItem = document.createElement("div");
-      newNavItem.innerHTML = '<div data-v-72573f18="" data-v-13a3d5e6="" class="text-primary cursor-pointer">Download Settings</div>';
-      navBar.appendChild(newNavItem);
-      navBar.lastChild.addEventListener('click', () => { window.location.href = window.location.href.split("#")[0] + "#dlSettings"; }, false);
+    (new MutationObserver(pageObserve)).observe(document, {childList: true, subtree: true});
+
+    // observe for page to actually load, fuck webapps
+    function pageObserve(changes,observer){
+        // Check if scriptRan elem has been added to the page so elems aren't added on every observer change
+        if (!document.querySelector("div#scriptRan")){
+          if (document.URL.includes("https://mangadex.org/settings")) {
+           addScriptSettings();
+         } else if(document.URL.includes("https://mangadex.org/title")){
+          addDownloadButtons();
+        }
+      } else {
+                //console.log("scriptRan still on page");
+              }
+            }
+
+            function addObserverElem(parent){
+              let elem = document.createElement("div");
+              elem.setAttribute("id","scriptRan");
+              parent.appendChild(elem);
+            }
+            function addScriptSettings(){
+              if (document.querySelector("div.grid-auto-rows")){
+                addObserverElem(document.querySelector("div.grid-auto-rows"));
+                let settingsGroup = document.querySelector("div.grid-auto-rows");
+                let navBar = document.querySelector("div.static.self-start");
+                let newNavItem = document.createElement("div");
+                newNavItem.innerHTML = '<div data-v-72573f18="" data-v-13a3d5e6="" class="text-primary cursor-pointer">Download Settings</div>';
+                navBar.appendChild(newNavItem);
+                navBar.lastChild.addEventListener('click', () => { window.location.href = window.location.href.split("#")[0] + "#dlSettings"; }, false);
       //Add options
 
       let newSettingsDiv = document.createElement("div");
@@ -134,22 +149,20 @@
     }
 
   }
-  function addDownloadButtons(changes, observer){
+  function addDownloadButtons(){
     if (document.querySelectorAll("div.flex.chapter").length > 0){
-      observer.disconnect();
+      addObserverElem(document.querySelectorAll("div.flex.chapter")[0]);
       console.log("flex chapter length ="+ document.querySelectorAll("div.flex.chapter").length);
+      document.querySelectorAll("div.flex.chapter").forEach((chapterRow) => {
+        let chapterID = chapterRow.querySelector("div > div > a").href.split('/').pop();
+        let dlButton = document.createElement("button");
+        dlButton.innerHTML = "Download";
+        dlButton.setAttribute("class","dlButton");
+        dlButton.setAttribute("id","dl-" + chapterID);
+        let divForButton = chapterRow.querySelector("div > div.flex.space-x-2.items-center");
+        divForButton.insertBefore(dlButton, divForButton.firstChild);
+        divForButton.firstChild.addEventListener('click', () => { startChapterDownload(chapterID, divForButton); }, false);});
     }
-    document.querySelectorAll("div.flex.chapter").forEach((chapterRow) => {
-      let chapterID = chapterRow.querySelector("div > div > a").href.split('/').pop();
-      let dlButton = document.createElement("button");
-      dlButton.innerHTML = "Download";
-      dlButton.setAttribute("class","dlButton");
-      dlButton.setAttribute("id","dl-" + chapterID);
-      let divForButton = chapterRow.querySelector("div > div.flex.space-x-2.items-center");
-      divForButton.insertBefore(dlButton, divForButton.firstChild);
-      divForButton.firstChild.addEventListener('click', () => { startChapterDownload(chapterID, divForButton); }, false);
-            //console.log(chapterID);
-          });
   }
 
     //Function to download a chapter (called by download-buttons)
@@ -245,7 +258,9 @@
   function normalizeAltNames(alts){
     let altNames = [];
     alts.forEach((alt)=>{
-      altNames.push(alt.en.normalize())
+      if (alt.en){
+        altNames.push(alt.en.normalize());
+      }
     });
     return altNames;
   }
