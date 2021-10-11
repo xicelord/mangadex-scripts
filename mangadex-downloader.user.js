@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      1.4
+// @version      1.5
 // @description  A userscript to add download-buttons to mangadex
 // @author       NO_ob, icelord
 // @homepage     https://github.com/NO-ob/mangadex-scripts
@@ -10,7 +10,7 @@
 // @match        https://mangadex.org/settings
 // @match        https://www.mangadex.org/settings
 // @match        https://mangadex.org/title/*
-// @match        https://mangadex.org/titles/feed
+// @match        https://mangadex.org/titles/*
 // @match        https://www.mangadex.org/title/*
 // @icon         https://mangadex.org/favicon.ico
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
@@ -76,7 +76,7 @@ function pageObserve(changes, observer) {
   if (!document.querySelector("div#scriptRan")) {
     if (document.URL.includes("https://mangadex.org/settings")) {
       addScriptSettings();
-    } else if (document.URL.includes("https://mangadex.org/title") || document.URL.includes("https://mangadex.org/titles/feed")) {
+    } else if (document.URL.includes("https://mangadex.org/title")) {
       addDownloadButtons();
     }
   } else {
@@ -165,7 +165,7 @@ function addDownloadButtons() {
     document.querySelectorAll("div.flex.chapter").forEach((chapterRow) => {
       let chapterID = chapterRow.querySelector("div > div > a").href.split('/').pop();
       let dlButton = document.createElement("button");
-      let mangaID = document.URL.includes(".com/manga/") ? document.URL.split("/")[4] : document.querySelector("div.flex.chapter").parentElement.parentElement.parentElement.parentElement.querySelector("div.chapter-feed__title > a").href.split("/")[4];
+      let mangaID = document.URL.includes("/title/") ? document.querySelector("a.group.flex.items-start").getAttribute("to").split("/")[2] : document.querySelector("div.flex.chapter").parentElement.parentElement.parentElement.parentElement.querySelector("div.chapter-feed__title > a").href.split("/")[4];
       dlButton.innerHTML = "Download";
       dlButton.setAttribute("class", "dlButton");
       dlButton.setAttribute("id", "dl-" + chapterID);
@@ -241,7 +241,7 @@ async function getFileUrls(chapterData) {
 async function getMangaData(mangaID) {
   //https://api.mangadex.org/manga/036fce64-6de7-4668-b7ba-66596d32e059
   let resp = await fetch("https://api.mangadex.org/manga/" + mangaID);
-  console.log("https://api.mangadex.org/manga/" + document.URL.split("/")[4]);
+  console.log("https://api.mangadex.org/manga/" + mangaID);
   if (resp.ok) {
     let json = await resp.json();
     console.log("Got manga metadata for: " + json.data.attributes.title.en + "[" + json.data.id + "]");
@@ -353,7 +353,7 @@ async function createZipFile(mangaData, urlList, chapterData) {
   let zip = new JSZip();
   let zipFilename =
     chapterInfo.manga +
-    (chapterInfo.language == "English" ? "" : " [" + language_iso[chapterInfo.language] + "]") +
+    (chapterInfo.language == "English" ? "" : " [" + chapterInfo.language + "]") +
     " - c" + (chapterInfo.chapter < 100 ? chapterInfo.chapter < 10 ? '00' + chapterInfo.chapter : '0' + chapterInfo.chapter : chapterInfo.chapter) +
     (chapterInfo.volume ? " (v" + (chapterInfo.volume < 10 ? '0' + chapterInfo.volume : chapterInfo.volume) + ")" : "") +
     " [" + chapterInfo.groups + "]" +
@@ -395,7 +395,7 @@ async function createZipFile(mangaData, urlList, chapterData) {
       let current_page = page_count - page_urls.length;
       let page_filename =
         (chapterInfo.manga +
-          (chapterInfo.language == "English" ? "" : " [" + language_iso[chapterInfo.language] + "]") +
+          (chapterInfo.language == "English" ? "" : " [" + chapterInfo.language + "]") +
           " - c" + (chapterInfo.chapter < 100 ? chapterInfo.chapter < 10 ? '00' + chapterInfo.chapter : '0' + chapterInfo.chapter : chapterInfo.chapter) +
           (chapterInfo.volume ? " (v" + (chapterInfo.volume < 10 ? '0' + chapterInfo.volume : chapterInfo.volume) + ")" : "") +
           " - p" + (current_page < 100 ? current_page < 10 ? '00' + current_page : '0' + current_page : current_page) +
