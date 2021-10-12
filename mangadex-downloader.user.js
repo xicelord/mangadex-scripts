@@ -1,17 +1,12 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      1.5
+// @version      1.6
 // @description  A userscript to add download-buttons to mangadex
 // @author       NO_ob, icelord
 // @homepage     https://github.com/NO-ob/mangadex-scripts
 // @updateURL    https://github.com/NO-ob/mangadex-scripts/raw/master/mangadex-downloader.user.js
 // @downloadURL  https://github.com/NO-ob/mangadex-scripts/raw/master/mangadex-downloader.user.js
-// @match        https://mangadex.org
-// @match        https://mangadex.org/settings
-// @match        https://www.mangadex.org/settings
-// @match        https://mangadex.org/title/*
-// @match        https://mangadex.org/titles/*
-// @match        https://www.mangadex.org/title/*
+// @match        https://mangadex.org/*
 // @icon         https://mangadex.org/favicon.ico
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.min.js
