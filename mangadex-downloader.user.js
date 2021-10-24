@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      1.6
-// @description  A userscript to add download-buttons to mangadex
+// @version      1.7
+// @description  A userscript to add download-buttons to mangadex and dynasty-scans
 // @author       NO_ob, icelord
 // @homepage     https://github.com/NO-ob/mangadex-scripts
 // @updateURL    https://github.com/NO-ob/mangadex-scripts/raw/master/mangadex-downloader.user.js
 // @downloadURL  https://github.com/NO-ob/mangadex-scripts/raw/master/mangadex-downloader.user.js
 // @match        https://mangadex.org/*
+// @match        https://dynasty-scans.com/series/*
 // @icon         https://mangadex.org/favicon.ico
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.min.js
@@ -59,10 +60,15 @@ var language_iso = {
   'use strict';
   //Settings or download
   // Need to observe constantly or script wont observe changes when loading
-  (new MutationObserver(pageObserve)).observe(document, {
-    childList: true,
-    subtree: true
-  });
+  if (document.URL.includes("mangadex")){
+        (new MutationObserver(pageObserve)).observe(document, {
+            childList: true,
+            subtree: true
+        });
+  } else {
+     addDynastyDownloadButtons();
+  }
+
 })();
 
 // observe for page to actually load, fuck webapps
@@ -79,6 +85,28 @@ function pageObserve(changes, observer) {
   }
 }
 
+
+function addDynastyDownloadButtons(){
+    if (document.querySelectorAll(".chapter-list > dd > a.name")) {
+    console.log("chapter length =" + document.querySelectorAll(".chapter-list > dd > a.name").length);
+    document.querySelectorAll(".chapter-list > dd > a.name").forEach((chapterRow) => {
+      let chapterID = chapterRow.href.split('/').pop();
+      let dlButton = document.createElement("button");
+      let mangaID = document.URL.split('/').pop();
+      let mangaHref = chapterRow.href
+      dlButton.innerHTML = "Download";
+      dlButton.setAttribute("class", "dlButton");
+      dlButton.setAttribute("id", "dl-" + chapterID);
+      let divForButton = chapterRow.parentNode;
+      divForButton.insertBefore(dlButton, chapterRow);
+      document.getElementById("dl-" + chapterID).addEventListener('click', () => {
+          startDynastyDownload(chapterID, divForButton, mangaID,mangaHref);
+      }, false);
+    });
+  }
+
+
+}
 function addObserverElem(parent) {
   let elem = document.createElement("div");
   elem.setAttribute("id", "scriptRan");
@@ -196,13 +224,87 @@ async function startChapterDownload(chapterID, parent, mangaID) {
     if (urlList.length > 0) {
       let mangaData = await getMangaData(mangaID);
       if (mangaData != null) {
-        createZipFile(mangaData, urlList, chapterData);
+        getMangaDexChapterInfo(mangaData, urlList, chapterData);
       }
     }
   }
 }
 
+async function startDynastyDownload(chapterID, parent, mangaID,mangaHref){
+    console.log("start dyanasty dl");
+    console.log("mangaHref");
+    let urlList = [];
+    //let resp = await
+    fetch(mangaHref).then(response => response.text())
+        .then((body) => {
+        let page = document.createElement("html");
+        page.innerHTML = body.substring(body.indexOf("<html>")+6,body.indexOf("</html>"));
+        let inner = page.querySelector("body > script").innerHTML;
+        let urlObjs = JSON.parse(inner.substring(inner.indexOf("=")+1,inner.indexOf("]")+1))
+        for (let i = 0; i < urlObjs.length; i++){
+           urlList.push(urlObjs[i].image);
+        }
+        console.log(urlList);
+        let tags = [];
+        page.querySelectorAll(".tags > a.label").forEach(tagElem => {
+            tags.push(tagElem.textContent);
+        });
 
+        let chapter = document.getElementById("dl-"+chapterID).nextSibling.textContent.split(":")[0].split(" ")[1]
+        let title = "";
+        if (document.getElementById("dl-"+chapterID).nextSibling.textContent.split(":").length > 1){
+           title = document.getElementById("dl-"+chapterID).nextSibling.textContent.split(":")[1];
+        }
+        let elem = document.getElementById("dl-"+chapterID).parentElement
+        let chapList = document.querySelector(".chapter-list").children;
+        let vol = "";
+        let index = Array.prototype.indexOf.call(chapList,elem);
+        for (let x = index; x >= 0; x--){
+            if (chapList[x].tagName == "DT"){
+                console.log(chapList[x]);
+                vol = chapList[x].textContent;
+                break;
+            }
+        }
+        vol.split(" ")[1];
+        document.getElementById("dl-"+chapterID).nextSibling.textContent.split(":")[1]
+        page.querySelector(".scanlators > a > img").alt
+        //author = document.querySelector(".tag-title > a").textContent
+        const chapterInfo = {
+            manga: document.querySelector(".tag-title > b").textContent,
+            altnames: "",
+            link: 'https://dynasty-scans.com/chapters/' + chapterID,
+            chapter: chapter,
+            volume: vol.split(" ")[1] || null,
+            title: title || null,
+            groups: page.querySelector(".scanlators > a > img").alt,
+            genres: tags,
+            //get user from chapterdata https://api.mangadex.org/user/ id
+            uploader: "",
+            posted: page.querySelector(".released").textContent.trim(),
+            language: "English",
+            translated: "English",
+            images: urlList
+        };
+        let progressDiv = document.createElement("div");
+        progressDiv.innerHTML = '<div id="progress-out-' + chapterID + '" style="width: 50px; margin-bottom: 2px; background-color: grey;float:left;">' +
+        '<div id="progress-in-' + chapterID + '" style="width: 0%; height: 7px; background-color: green;float:left;">' +
+        '</div>' +
+        '</div>';
+        parent.removeChild(document.getElementById("dl-"+chapterID));
+        parent.insertBefore(progressDiv, parent.firstChild);
+        createZipFile(chapterInfo, chapterID, urlList);
+    });
+
+
+
+   /* if (resp.ok) {
+      let page = document.createElement("div");
+      page.innerHTML = resp.text();
+        console.log(page.getElementsByTagName("script")[0]);
+    }*/
+
+}
 async function getChapterMetaData(chapterID) {
   //https://api.mangadex.org/chapter/2de64986-f092-4027-ab35-f78c4a1b54f2
   let resp = await fetch("https://api.mangadex.org/chapter/" + chapterID);
@@ -304,9 +406,8 @@ function getTags(tags) {
   }
 }
 
-async function createZipFile(mangaData, urlList, chapterData) {
-  //Fetch page-urls and download them
-  let id = chapterData.id;
+async function getMangaDexChapterInfo(mangaData, urlList, chapterData){
+   //Fetch page-urls and download them
   let tagsMap = getTags(mangaData.attributes.tags);
   //
   let uploaderID = "";
@@ -343,7 +444,13 @@ async function createZipFile(mangaData, urlList, chapterData) {
     translated: chapterData.attributes.translatedLanguage,
     images: urlList
   };
+    console.log(chapterInfo);
+    createZipFile(chapterInfo, chapterData.id,urlList);
 
+
+}
+async function createZipFile(chapterInfo, id, urlList) {
+ 
   //Fetch all pages using JSZip
   let zip = new JSZip();
   let zipFilename =
@@ -417,7 +524,7 @@ async function createZipFile(mangaData, urlList, chapterData) {
           alert('A page-download failed. Check the console for more details.');
           console.error(data);
           clearInterval(interval);
-          setProgress(chapterData.id, -1);
+          setProgress(id, -1);
         }
       });
     } else if (active_downloads === 0 && page_urls.length === 0) {
@@ -426,7 +533,7 @@ async function createZipFile(mangaData, urlList, chapterData) {
         type: "blob"
       }).then((zipFile) => {
         saveAs(zipFile, zipFilename);
-        setProgress(chapterData.id, -1);
+        setProgress(id, -1);
       });
     }
   }, 500);
