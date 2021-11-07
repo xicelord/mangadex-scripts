@@ -189,7 +189,7 @@ function addDownloadButtons() {
     document.querySelectorAll("div.flex.chapter").forEach((chapterRow) => {
       let chapterID = chapterRow.querySelector("div > div > a").href.split('/').pop();
       let dlButton = document.createElement("button");
-      let mangaID = document.URL.includes("/title/") ? document.querySelector("a.group.flex.items-start").getAttribute("to").split("/")[2] : document.querySelector("div.flex.chapter").parentElement.parentElement.parentElement.parentElement.querySelector("div.chapter-feed__title > a").href.split("/")[4];
+      let mangaID = document.URL.includes("/title/") ? document.querySelector("a.group.flex.items-start").getAttribute("to").split("/")[2] : chapterRow.parentElement.parentElement.parentElement.parentElement.querySelector("a.chapter-feed__title").href.split("/")[4];
       dlButton.innerHTML = "Download";
       dlButton.setAttribute("class", "dlButton");
       dlButton.setAttribute("id", "dl-" + chapterID);
@@ -447,9 +447,16 @@ async function getMangaDexChapterInfo(mangaData, urlList, chapterData) {
 
   if (chapterInfo.volume == null) {
     console.log("progress-out-" + chapterData.id);
-    let prevVol = document.getElementById("progress-out-" + chapterData.id).parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.nextElementSibling.querySelector(".volume-head > div:nth-child(1)").innerText.split(" ")[1];
-    if (prevVol != "Volume" || prevVol != null) {
-      chapterInfo.volume = parseInt(prevVol) + 1;
+    let prevVol = document.getElementById("progress-out-" + chapterData.id).parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.nextElementSibling;
+    if (prevVol != null){
+      prevVol = prevVol.querySelector(".volume-head > div:nth-child(1)");
+      if (prevVol != null){
+        if(prevVol.innerText != "No Volume"){
+          prevVol = prevVol.innerText.split(" ")[1];
+          chapterInfo.volume = parseInt(prevVol) + 1;
+        }
+      }
+      
     }
   }
   console.log(chapterInfo);
