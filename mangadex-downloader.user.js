@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      2.0
+// @version      2.1
 // @description  A userscript to add download-buttons to mangadex
 // @author       NO_ob, icelord, eva
 // @homepage     https://github.com/NO-ob/mangadex-scripts
@@ -187,17 +187,19 @@ function addDownloadButtons() {
         (document.querySelectorAll("div.flex.chapter").length > 0) ? addObserverElem(document.querySelectorAll("div.flex.chapter")[0]): addObserverElem(document.querySelectorAll("div.chapter-feed__container")[0]);
         console.log("flex chapter length =" + document.querySelectorAll("div.flex.chapter").length);
         document.querySelectorAll("div.flex.chapter").forEach((chapterRow) => {
-            let chapterID = chapterRow.querySelector("div > div > a").href.split('/').pop();
-            let dlButton = document.createElement("button");
-            let mangaID = document.URL.includes("/title/") ? document.querySelector("a.group.flex.items-start").getAttribute("to").split("/")[2] : chapterRow.parentElement.parentElement.parentElement.parentElement.querySelector("a.chapter-feed__title").href.split("/")[4];
-            dlButton.innerHTML = "Download";
-            dlButton.setAttribute("class", "dlButton");
-            dlButton.setAttribute("id", "dl-" + chapterID);
-            let divForButton = chapterRow.querySelector("div > div.flex.space-x-2.items-center");
-            divForButton.insertBefore(dlButton, divForButton.firstChild);
-            divForButton.firstChild.addEventListener('click', () => {
-                startChapterDownload(chapterID, divForButton, mangaID);
-            }, false);
+	        	if (chapterRow.querySelector("div > div > a").href.startsWith("https://mangadex.org/chapter")){
+	            let chapterID = chapterRow.querySelector("div > div > a").href.split('/').pop();
+	            let dlButton = document.createElement("button");
+	            let mangaID = document.URL.includes("/title/") ? document.querySelector("a.group.flex.items-start").getAttribute("to").split("/")[2] : chapterRow.parentElement.parentElement.parentElement.parentElement.querySelector("a.chapter-feed__title").href.split("/")[4];
+	            dlButton.innerHTML = "Download";
+	            dlButton.setAttribute("class", "dlButton");
+	            dlButton.setAttribute("id", "dl-" + chapterID);
+	            let divForButton = chapterRow.querySelector("div > div.flex.space-x-2.items-center");
+	            divForButton.insertBefore(dlButton, divForButton.firstChild);
+	            divForButton.firstChild.addEventListener('click', () => {
+	                startChapterDownload(chapterID, divForButton, mangaID);
+	            }, false);
+	        }
         });
     }
 }
