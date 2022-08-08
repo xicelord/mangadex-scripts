@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      2.1
+// @version      2.2
 // @description  A userscript to add download-buttons to mangadex
 // @author       NO_ob, icelord, eva
 // @homepage     https://github.com/NO-ob/mangadex-scripts
@@ -363,6 +363,9 @@ async function getUser(userID) {
 }
 
 async function getScanlationGroupName(groupID) {
+	if(!groupID){
+       return [];
+    }
     console.log("getting group: " + groupID);
     let resp = await fetch("https://api.mangadex.org/group/" + groupID);
     if (resp.ok) {
