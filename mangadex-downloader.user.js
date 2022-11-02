@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      2.3
+// @version      2.4
 // @description  A userscript to add download-buttons to mangadex
 // @author       NO_ob, icelord, eva
 // @homepage     https://github.com/NO-ob/mangadex-scripts
@@ -159,7 +159,7 @@ function addScriptSettings() {
             '</div>' +
             '</div>' +
             '</div>';
-        
+
         settingsGroup.insertBefore(newSettingsDiv, settingsGroup.firstChild);
 
         //Add handler to save options
@@ -185,9 +185,10 @@ function addDownloadButtons() {
 	            dlButton.innerHTML = "Download";
 	            dlButton.setAttribute("class", "dlButton");
 	            dlButton.setAttribute("id", "dl-" + chapterID);
+                dlButton.setAttribute("style", "float:left");
 	            let divForButton = chapterRow.parentElement;
 	            divForButton.insertBefore(dlButton, chapterRow);
-	            divForButton.firstChild.onclick = () => {
+	             divForButton.querySelector("#dl-" + chapterID).onclick = () => {
 	                startChapterDownload(chapterID, divForButton, mangaID);
                     console.log("chapter id: " + chapterID);
                     console.log("manga id: " + mangaID);
@@ -201,12 +202,13 @@ function addDownloadButtons() {
 async function startChapterDownload(chapterID, parent, mangaID) {
     //Inject progressbar
     let progressDiv = document.createElement("div");
-    progressDiv.innerHTML = '<div id="progress-out-' + chapterID + '" style="width: 80px; margin-bottom: 2px; background-color: grey;">' +
+    progressDiv.innerHTML = '<div id="progress-out-' + chapterID + '" style="float:left; width: 80px; margin-bottom: 2px; background-color: grey;">' +
         '<div id="progress-in-' + chapterID + '" style="width: 0%; height: 7px; background-color: green;">' +
         '</div>' +
         '</div>';
-    parent.removeChild(parent.firstChild);
-    parent.insertBefore(progressDiv, parent.firstChild);
+    parent.insertBefore(progressDiv, parent.querySelector("#dl-" + chapterID));
+    parent.removeChild(parent.querySelector("#dl-" + chapterID));
+    
 
     //Mark downloaded chapter as read
     if (parent.querySelector("svg.feather-eye")) {
