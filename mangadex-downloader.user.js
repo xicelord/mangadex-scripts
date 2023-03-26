@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      2.4
+// @version      2.5
 // @description  A userscript to add download-buttons to mangadex
 // @author       NO_ob, icelord, eva
 // @homepage     https://github.com/NO-ob/mangadex-scripts
@@ -56,7 +56,7 @@ var language_iso = {
 
 
 
-(function() {
+(function () {
     'use strict';
     //Settings or download
     // Need to observe constantly or script wont observe changes when loading
@@ -115,9 +115,9 @@ function addObserverElem(parent) {
 }
 
 function addScriptSettings() {
-    if (document.querySelector("div.flex.flex-col.gap-2.self-stretch.flex-grow")) {
+    if (document.querySelector("div.settings-container")) {
         addObserverElem(document.querySelector("html"));
-        let settingsGroup = document.querySelector("div.flex.flex-col.gap-2.self-stretch.flex-grow");
+        let settingsGroup = document.querySelector("div.settings-container");
         let newSettingsDiv = document.createElement("div");
         newSettingsDiv.innerHTML = '<div id="download_settings" style="margin-top: -96px; padding-top: 96px;">' +
             '<a id="dlSettings"/a>' +
@@ -174,26 +174,26 @@ function addScriptSettings() {
 }
 
 function addDownloadButtons() {
-    if (document.querySelectorAll("a.flex.chapter").length > 0 ) {
-        addObserverElem(document.querySelectorAll("a.flex.chapter")[0])
+    if (document.querySelectorAll('a.flex[href*="/chapter/"]').length > 0) {
+        addObserverElem(document.querySelectorAll('a.flex[href*="/chapter/"]')[0])
         console.log("flex chapter length =" + document.querySelectorAll("div.flex.chapter").length);
-        document.querySelectorAll("a.flex.chapter").forEach((chapterRow) => {
-	        	if (chapterRow.href.startsWith("https://mangadex.org/chapter")){
-	            let chapterID = chapterRow.href.split('/').pop();
-	            let dlButton = document.createElement("button");
-	            let mangaID = document.URL.includes("/title/") ? document.querySelector("a.group.flex.items-start").getAttribute("to").split("/")[2] : chapterRow.parentElement.parentElement.parentElement.parentElement.querySelector("a.chapter-feed__title").href.split("/")[4];
-	            dlButton.innerHTML = "Download";
-	            dlButton.setAttribute("class", "dlButton");
-	            dlButton.setAttribute("id", "dl-" + chapterID);
+        document.querySelectorAll('a.flex[href*="/chapter/"]').forEach((chapterRow) => {
+            if (chapterRow.href.startsWith("https://mangadex.org/chapter")) {
+                let chapterID = chapterRow.href.split('/').pop();
+                let dlButton = document.createElement("button");
+                let mangaID = document.URL.includes("/title/") ? document.querySelector("a.group.flex.items-start").getAttribute("to").split("/")[2] : chapterRow.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector("a.chapter-feed__title").href.split("/")[4];
+                dlButton.innerHTML = "Download";
+                dlButton.setAttribute("class", "dlButton");
+                dlButton.setAttribute("id", "dl-" + chapterID);
                 dlButton.setAttribute("style", "float:left");
-	            let divForButton = chapterRow.parentElement;
-	            divForButton.insertBefore(dlButton, chapterRow);
-	             divForButton.querySelector("#dl-" + chapterID).onclick = () => {
-	                startChapterDownload(chapterID, divForButton, mangaID);
+                let divForButton = chapterRow.parentElement.parentElement;
+                divForButton.insertBefore(dlButton, chapterRow.parentElement);
+                divForButton.querySelector("#dl-" + chapterID).onclick = () => {
+                    startChapterDownload(chapterID, divForButton, mangaID);
                     console.log("chapter id: " + chapterID);
                     console.log("manga id: " + mangaID);
-	            };
-	        }
+                };
+            }
         });
     }
 }
@@ -208,7 +208,7 @@ async function startChapterDownload(chapterID, parent, mangaID) {
         '</div>';
     parent.insertBefore(progressDiv, parent.querySelector("#dl-" + chapterID));
     parent.removeChild(parent.querySelector("#dl-" + chapterID));
-    
+
 
     //Mark downloaded chapter as read
     if (parent.querySelector("svg.feather-eye")) {
@@ -266,7 +266,7 @@ async function startDynastyDownload(chapterID, parent, mangaID, mangaHref) {
             }
             document.getElementById("dl-" + chapterID).nextSibling.textContent.split(":")[1]
             page.querySelector(".scanlators > a > img").alt
-                //author = document.querySelector(".tag-title > a").textContent
+            //author = document.querySelector(".tag-title > a").textContent
             const chapterInfo = {
                 manga: document.querySelector(".tag-title > b").textContent,
                 altnames: "",
@@ -359,8 +359,8 @@ async function getUser(userID) {
 }
 
 async function getScanlationGroupName(groupID) {
-	if(!groupID){
-       return [];
+    if (!groupID) {
+        return [];
     }
     console.log("getting group: " + groupID);
     let resp = await fetch("https://api.mangadex.org/group/" + groupID);
@@ -520,7 +520,7 @@ async function createZipFile(chapterInfo, id, urlList) {
                     " - p" + (current_page < 100 ? current_page < 10 ? '00' + current_page : '0' + current_page : current_page) +
                     " [" + chapterInfo.groups + "]" +
                     '.' + to_download.split('.').pop())
-                .replace(/[\/\?<>\\:\*\|":\x00-\x1f\x80-\x9f]/gi, '_')
+                    .replace(/[\/\?<>\\:\*\|":\x00-\x1f\x80-\x9f]/gi, '_')
 
 
             active_downloads++;
@@ -528,7 +528,7 @@ async function createZipFile(chapterInfo, id, urlList) {
                 method: 'GET',
                 url: to_download,
                 responseType: 'arraybuffer',
-                onload: function(data) {
+                onload: function (data) {
                     zip.file(page_filename, data.response, {
                         binary: true
                     });
@@ -537,7 +537,7 @@ async function createZipFile(chapterInfo, id, urlList) {
                     }
                     active_downloads--;
                 },
-                onerror: function(data) {
+                onerror: function (data) {
                     alert('A page-download failed. Check the console for more details.');
                     console.error(data);
                     clearInterval(interval);
