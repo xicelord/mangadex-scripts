@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         MangaDex Downloader
-// @version      2.5
+// @version      2.6
 // @description  A userscript to add download-buttons to mangadex
 // @author       NO_ob, icelord, eva
 // @homepage     https://github.com/NO-ob/mangadex-scripts
@@ -181,7 +181,7 @@ function addDownloadButtons() {
             if (chapterRow.href.startsWith("https://mangadex.org/chapter")) {
                 let chapterID = chapterRow.href.split('/').pop();
                 let dlButton = document.createElement("button");
-                let mangaID = document.URL.includes("/title/") ? document.querySelector("a.group.flex.items-start").getAttribute("to").split("/")[2] : chapterRow.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector("a.chapter-feed__title").href.split("/")[4];
+                let mangaID = document.URL.includes("/title/") ? document.querySelector('img.rounded').getAttribute("src").split('covers/')[1].split('/')[0] : chapterRow.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.querySelector("a.chapter-feed__title").href.split("/")[4];
                 dlButton.innerHTML = "Download";
                 dlButton.setAttribute("class", "dlButton");
                 dlButton.setAttribute("id", "dl-" + chapterID);
